@@ -97,16 +97,36 @@ watch(
   }
 )
 
+watch(
+  () => [props.task?.id, props.task?.status, props.task?.updatedAt],
+  async ([taskId]) => {
+    if (!props.modelValue || !taskId) return
+    await loadRuns({ preserveSelection: true, refreshLog: true })
+  }
+)
+
 watch(selectedRunId, async (runId) => {
   logText.value = runId ? await scriptBoxApi.getLog(runId) : ''
   await scrollToBottom()
 })
 
-async function loadRuns(): Promise<void> {
+async function loadRuns(options: { preserveSelection?: boolean; refreshLog?: boolean } = {}): Promise<void> {
   if (!props.task) return
+  const previousRunId = selectedRunId.value
   runs.value = await scriptBoxApi.listRuns(props.task.id)
-  selectedRunId.value = runs.value[0]?.id ?? ''
-  if (!selectedRunId.value) logText.value = ''
+  const nextRunId =
+    options.preserveSelection && runs.value.some((run) => run.id === previousRunId) ? previousRunId : (runs.value[0]?.id ?? '')
+
+  selectedRunId.value = nextRunId
+  if (!selectedRunId.value) {
+    logText.value = ''
+    return
+  }
+
+  if (options.refreshLog || nextRunId === previousRunId) {
+    logText.value = await scriptBoxApi.getLog(selectedRunId.value)
+    await scrollToBottom()
+  }
 }
 
 function handleLogEvent(event: LogEvent): void {
