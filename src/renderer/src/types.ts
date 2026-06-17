@@ -1,6 +1,7 @@
 export type TaskStatus = 'idle' | 'running' | 'success' | 'failed' | 'stopped'
 export type RunStatus = 'running' | 'success' | 'failed' | 'stopped'
 export type ConfigFieldType = 'string' | 'password' | 'number' | 'textarea' | 'boolean' | 'select'
+export type JobSource = 'builtin' | 'user'
 
 export interface ConfigOption {
   label: string
@@ -23,6 +24,8 @@ export interface JobManifest {
   version: string
   timeout?: number
   config: ConfigField[]
+  source?: JobSource
+  rootDir?: string
 }
 
 export interface Task {
@@ -65,4 +68,15 @@ export interface LogEvent {
   taskId: string
   runId: string
   line: string
+}
+
+export interface JobImportResult {
+  job: JobManifest
+  installed: boolean
+}
+
+export interface JobProgressEvent {
+  step: 'validating' | 'extracting' | 'installing' | 'completed' | 'failed'
+  message: string
+  detail?: string
 }

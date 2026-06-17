@@ -1,9 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { JobManifest, LogEvent, RunRecord, Task, TaskInput, TaskUpdateInput } from '../main/types'
+import type { JobImportResult, JobManifest, JobProgressEvent, LogEvent, RunRecord, Task, TaskInput, TaskUpdateInput } from '../main/types'
 
 const api = {
   listJobs: (): Promise<JobManifest[]> => ipcRenderer.invoke('job:list'),
   getJob: (jobId: string): Promise<JobManifest | null> => ipcRenderer.invoke('job:get', jobId),
+  importJob: (): Promise<JobImportResult | null> => ipcRenderer.invoke('job:import'),
+  deleteJob: (jobId: string): Promise<boolean> => ipcRenderer.invoke('job:delete', jobId),
+  installJobDependencies: (jobId: string): Promise<boolean> => ipcRenderer.invoke('job:installDeps', jobId),
+  openUserJobsDir: (): Promise<boolean> => ipcRenderer.invoke('job:openUserJobsDir'),
   listTasks: (): Promise<Task[]> => ipcRenderer.invoke('task:list'),
   createTask: (input: TaskInput): Promise<Task> => ipcRenderer.invoke('task:create', input),
   updateTask: (input: TaskUpdateInput): Promise<Task> => ipcRenderer.invoke('task:update', input),
@@ -25,6 +29,11 @@ const api = {
     const listener = (_: Electron.IpcRendererEvent, payload: Task): void => callback(payload)
     ipcRenderer.on('task:changed', listener)
     return () => ipcRenderer.removeListener('task:changed', listener)
+  },
+  onJobProgress: (callback: (event: JobProgressEvent) => void): (() => void) => {
+    const listener = (_: Electron.IpcRendererEvent, payload: JobProgressEvent): void => callback(payload)
+    ipcRenderer.on('job:progress', listener)
+    return () => ipcRenderer.removeListener('job:progress', listener)
   },
   onLog: (callback: (event: LogEvent) => void): (() => void) => {
     const listener = (_: Electron.IpcRendererEvent, payload: LogEvent): void => callback(payload)

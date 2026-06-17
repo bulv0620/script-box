@@ -9,6 +9,8 @@ Script Box is an Electron + Vue 3 desktop application for managing script Jobs a
 Core features:
 
 - Auto-discover Job templates from `src/jobs`
+- Import user Jobs from zip packages
+- Install user Job dependencies from each Job's own `package.json`
 - Create, edit, delete, run, and stop Tasks
 - Persist Tasks and RunRecords in SQLite through `better-sqlite3`
 - Write logs to the filesystem
@@ -61,7 +63,7 @@ Packaged artifacts go to `release/`.
 src/main/       Electron main process: DB, IPC, Job, Task, Runner, Log
 src/preload/    Safe renderer bridge APIs
 src/renderer/   Vue renderer application
-src/jobs/       Job templates
+src/jobs/       Built-in Job templates
 build/icons/    Generated app icons
 docs/           Product requirements and design docs
 ```
@@ -72,12 +74,15 @@ Runtime data is stored under Electron `app.getPath('userData')`.
 
 - SQLite database: `database/script-box.sqlite`
 - Logs: `logs/`
+- User Jobs: `jobs/`
 
 Do not store runtime database or log files in the repository.
 
 ## Job Contract
 
-Each Job lives in its own directory under `src/jobs`.
+Built-in Jobs live in `src/jobs`.
+
+User-imported Jobs live in Electron `userData/jobs`.
 
 Required files:
 
@@ -107,6 +112,17 @@ export default {
 
 Jobs run in the Node/Electron runtime and may import dependencies from `node_modules`.
 
+User Job zip packages must include:
+
+```text
+manifest.js
+index.js
+package.json
+```
+
+User Jobs should declare runtime dependencies in their own `package.json`.
+After import, Script Box installs dependencies inside that Job directory.
+
 ## IPC Notes
 
 Renderer APIs are exposed through `window.scriptBox` in `src/preload/index.ts`.
@@ -116,6 +132,7 @@ Main IPC handlers are registered in `src/main/ipc/register-ipc.ts`.
 Important event channels:
 
 - `log:event`
+- `job:progress`
 - `task:changed`
 - `window:maximized`
 

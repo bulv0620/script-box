@@ -1,30 +1,23 @@
-import type { JobManifest, LogEvent, RunRecord, Task, TaskInput, TaskUpdateInput } from '../types'
+import type { JobImportResult, JobManifest, JobProgressEvent, LogEvent, RunRecord, Task, TaskInput, TaskUpdateInput } from '../types'
 
 const fallbackJobs: JobManifest[] = [
-  {
-    jobId: 'demo',
-    jobName: '演示任务',
-    description: '输出多步骤日志并演示停止信号',
-    version: '1.0.0',
-    timeout: 120000,
-    config: []
-  },
   {
     jobId: 'http-check',
     jobName: 'HTTP 检测',
     description: '检查指定 URL 的可访问状态',
     version: '1.0.0',
     timeout: 60000,
-    config: []
+    config: [],
+    source: 'builtin'
   }
 ]
 
 const fallbackTasks: Task[] = [
   {
     id: 'preview-1',
-    jobId: 'demo',
-    name: '每日数据同步',
-    description: '同步业务数据并输出执行摘要。',
+    jobId: 'http-check',
+    name: '接口健康检查',
+    description: '检查测试服务是否可访问。',
     config: {},
     status: 'running',
     createdAt: Date.now(),
@@ -55,6 +48,10 @@ const nativeApi = window.scriptBox
 export const scriptBoxApi = {
   listJobs: (): Promise<JobManifest[]> => nativeApi?.listJobs() ?? Promise.resolve(fallbackJobs),
   getJob: (jobId: string): Promise<JobManifest | null> => nativeApi?.getJob(jobId) ?? Promise.resolve(fallbackJobs.find((job) => job.jobId === jobId) ?? null),
+  importJob: (): Promise<JobImportResult | null> => nativeApi?.importJob() ?? Promise.resolve(null),
+  deleteJob: (jobId: string): Promise<boolean> => nativeApi?.deleteJob(jobId) ?? Promise.resolve(Boolean(jobId)),
+  installJobDependencies: (jobId: string): Promise<boolean> => nativeApi?.installJobDependencies(jobId) ?? Promise.resolve(Boolean(jobId)),
+  openUserJobsDir: (): Promise<boolean> => nativeApi?.openUserJobsDir() ?? Promise.resolve(true),
   listTasks: (): Promise<Task[]> => nativeApi?.listTasks() ?? Promise.resolve(fallbackTasks),
   createTask: (input: TaskInput): Promise<Task> =>
     nativeApi?.createTask(input) ??
@@ -95,5 +92,6 @@ export const scriptBoxApi = {
     nativeApi?.getLog(runId) ??
     Promise.resolve(`[2026-06-16 10:00:00] INFO 开始执行\n[2026-06-16 10:00:01] INFO 预览日志 ${runId}\n[2026-06-16 10:00:02] INFO 执行完成\n`),
   onTaskChanged: (callback: (task: Task) => void): (() => void) => nativeApi?.onTaskChanged(callback) ?? (() => undefined),
+  onJobProgress: (callback: (event: JobProgressEvent) => void): (() => void) => nativeApi?.onJobProgress(callback) ?? (() => undefined),
   onLog: (callback: (event: LogEvent) => void): (() => void) => nativeApi?.onLog(callback) ?? (() => undefined)
 }

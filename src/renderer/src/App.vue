@@ -33,6 +33,7 @@
             <div class="page-actions">
               <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="refresh" />
               <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" @click="openCreate">新增任务</v-btn>
+              <v-btn variant="tonal" prepend-icon="mdi-package-variant-closed" @click="jobManagerOpen = true">Job 管理</v-btn>
             </div>
           </header>
 
@@ -158,6 +159,7 @@
     </v-main>
 
     <TaskConfigModal v-model="configOpen" :jobs="jobs" :editing-task="editingTask" @save="saveTask" />
+    <JobManagerModal v-model="jobManagerOpen" :jobs="jobs" @changed="refresh" />
     <LogModal v-model="logOpen" :task="selectedTask" />
   </v-app>
 </template>
@@ -165,6 +167,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import JobManagerModal from './components/JobManagerModal.vue'
 import LogModal from './components/LogModal.vue'
 import TaskConfigModal from './components/TaskConfigModal.vue'
 import { scriptBoxApi } from './api/script-box'
@@ -176,6 +179,7 @@ import { formatDate, statusColor, statusText } from './utils/format'
 const store = useTaskStore()
 const { jobs, tasks, loading, jobMap } = storeToRefs(store)
 const configOpen = ref(false)
+const jobManagerOpen = ref(false)
 const logOpen = ref(false)
 const editingTask = ref<Task | null>(null)
 const selectedTask = ref<Task | null>(null)

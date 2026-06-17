@@ -490,6 +490,131 @@ textarea {
   padding-top: 14px;
 }
 
+.job-manager-dialog {
+  display: flex !important;
+  max-height: min(84vh, 720px);
+  flex-direction: column;
+}
+
+.job-manager-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  padding: 16px !important;
+}
+
+.job-actions-bar {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.job-progress {
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid #dfe5ef;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.job-progress__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 0 10px;
+  border-bottom: 1px solid #e4e9f1;
+}
+
+.job-progress pre {
+  max-height: 130px;
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  color: #344054;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.job-list {
+  display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  gap: 10px;
+  align-content: start;
+  overflow-y: auto;
+}
+
+.job-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(120px, 0.35fr) 88px auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 78px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 8px;
+}
+
+.job-row__main,
+.job-row__meta {
+  min-width: 0;
+}
+
+.job-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.job-title-line h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-row__main p {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: #667085;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-row__meta span {
+  display: block;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.job-row__meta strong {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-row__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
 .log-tools {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.75fr);

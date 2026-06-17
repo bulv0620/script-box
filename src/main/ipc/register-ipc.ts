@@ -15,6 +15,24 @@ interface IpcDeps {
 export function registerIpc({ jobManager, taskManager, runnerManager, logManager }: IpcDeps): void {
   ipcMain.handle('job:list', () => jobManager.list())
   ipcMain.handle('job:get', (_, jobId: string) => jobManager.get(jobId).then((job) => job?.manifest ?? null))
+  ipcMain.handle('job:import', (event) =>
+    jobManager.importFromZip((payload) => {
+      event.sender.send('job:progress', payload)
+    })
+  )
+  ipcMain.handle('job:delete', async (_, jobId: string) => {
+    if (taskManager.countByJob(jobId) > 0) throw new Error('该 Job 已有关联任务，不能删除')
+    return jobManager.deleteUserJob(jobId)
+  })
+  ipcMain.handle('job:installDeps', (event, jobId: string) =>
+    jobManager.installDependencies(jobId, (payload) => {
+      event.sender.send('job:progress', payload)
+    })
+  )
+  ipcMain.handle('job:openUserJobsDir', () => {
+    jobManager.openUserJobsDir()
+    return true
+  })
 
   ipcMain.handle('task:list', () => taskManager.list())
   ipcMain.handle('task:create', (_, input: TaskInput) => taskManager.create(input))

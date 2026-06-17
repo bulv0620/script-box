@@ -101,6 +101,11 @@ export class TaskManager {
     this.db.prepare('DELETE FROM task WHERE id = ?').run(id)
   }
 
+  countByJob(jobId: string): number {
+    const row = this.db.prepare('SELECT COUNT(*) AS count FROM task WHERE job_id = ?').get(jobId) as { count: number }
+    return row.count
+  }
+
   setStatus(id: string, status: TaskStatus): void {
     this.db.prepare('UPDATE task SET status = ?, updated_at = ? WHERE id = ?').run(status, Date.now(), id)
   }
