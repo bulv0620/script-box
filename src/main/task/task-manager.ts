@@ -21,7 +21,7 @@ export class TaskManager {
   constructor(private readonly db: Database.Database) {}
 
   list(): Task[] {
-    const rows = this.db.prepare('SELECT * FROM task ORDER BY updated_at DESC').all() as TaskRow[]
+    const rows = this.db.prepare('SELECT * FROM task ORDER BY created_at DESC').all() as TaskRow[]
     return rows.map(rowToTask)
   }
 

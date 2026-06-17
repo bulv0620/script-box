@@ -5,6 +5,8 @@ import type { LogManager } from '../log/log-manager'
 import type { TaskManager } from '../task/task-manager'
 import type { RunRecord, RunStatus } from '../types'
 
+const MAX_RUN_RECORDS_PER_TASK = 50
+
 export class RunnerManager {
   private readonly running = new Map<string, AbortController>()
 
@@ -83,6 +85,7 @@ export class RunnerManager {
           .prepare('UPDATE run_record SET status = ?, end_time = ?, duration = ? WHERE id = ?')
           .run(status, endTime, endTime - startTime, runId)
         this.taskManager.markRunFinished(task.id, status)
+        this.pruneRuns(task.id)
         this.logManager.emitTaskChanged(this.taskManager.get(task.id))
       }
     })()
@@ -94,6 +97,32 @@ export class RunnerManager {
     const controller = this.running.get(taskId)
     if (!controller) return
     controller.abort('manual')
+  }
+
+  private pruneRuns(taskId: string): void {
+    const rows = this.db
+      .prepare(
+        `SELECT id, log_file FROM run_record
+        WHERE task_id = ?
+        ORDER BY start_time DESC
+        LIMIT -1 OFFSET ?`
+      )
+      .all(taskId, MAX_RUN_RECORDS_PER_TASK) as Array<{ id: string; log_file: string }>
+
+    if (rows.length === 0) return
+
+    const deleteRecord = this.db.prepare('DELETE FROM run_record WHERE id = ?')
+    const transaction = this.db.transaction((records: Array<{ id: string; log_file: string }>) => {
+      for (const record of records) {
+        deleteRecord.run(record.id)
+      }
+    })
+
+    for (const row of rows) {
+      this.logManager.deleteLogFile(row.log_file)
+    }
+
+    transaction(rows)
   }
 }
 

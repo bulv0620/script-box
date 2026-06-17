@@ -1,7 +1,7 @@
 import type { BrowserWindow } from 'electron'
 import { app } from 'electron'
-import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { appendFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import type { Logger, LogEvent, RunRecord, Task } from '../types'
 
 export class LogManager {
@@ -43,6 +43,18 @@ export class LogManager {
       return readFileSync(record.logFile, 'utf8')
     } catch {
       return ''
+    }
+  }
+
+  deleteLogFile(logFile: string): void {
+    const resolvedRoot = resolve(this.root)
+    const resolvedFile = resolve(logFile)
+    if (!resolvedFile.startsWith(resolvedRoot)) return
+
+    try {
+      rmSync(resolvedFile, { force: true })
+    } catch {
+      // Best-effort cleanup. Database pruning should not fail because a log file is locked or missing.
     }
   }
 
